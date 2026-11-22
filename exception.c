@@ -42,7 +42,7 @@ void TIM2_IRQHandler(void)
 		Pressing = 0;             // 뗄 때 rising은 무시되게
 		// 2초 경과 → 모터 on/off
 		if (m_status() == 1 || m_status() == 2) { m_stop(); LED_Off(); }
-		else            { m_cw();   LED_On();  }
+		else            { m_speed('1'); m_cw();   LED_On();  }
 	}
 
 }

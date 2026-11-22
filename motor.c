@@ -25,11 +25,6 @@ void m_stop(void){
     Macro_Clear_Area(GPIOA->ODR, 0x3, 0);   // PA0, PA1 동시에 0
 }
 
-// void m_stop(void){
-//     //m_speed(10);
-//     Macro_Clear_Bit(GPIOA->ODR,0);//PA0
-//     Macro_Clear_Bit(GPIOA->ODR,0);//PA1
-// }
 
 
 void m_invert(int d){
@@ -53,13 +48,7 @@ int m_status(){
     return Macro_Extract_Area(GPIOA->ODR,0x3,0);
 }
 
-// int m_status(){
-//     if(Macro_Check_Bit_Set(GPIOA->ODR,1))
-//         return 2;
-//     if(Macro_Check_Bit_Set(GPIOA->ODR,0))
-//         return 1;
-//     else return 0;//
-// }
+
 
 /// @brief speed 문자 1~9까지 입력으로 펜의 속도 조절
 /// @param speed 
@@ -71,17 +60,7 @@ void m_speed(unsigned char speed){
     // speed 문자형태 숫자를 int 형 숫자로 변경
     if (speed < 0x31 || speed > 0x39) return;
 
-    int idx = speed - 30;
+    int idx = speed - '0';
     TIM3_Out_PWM_Duty_Set(duty_arr[idx - 1]);
 }
 
-// void m_speed(unsigned char speed)
-// {
-//     const static unsigned char duty_arr[10] = {
-//         50, 56, 62, 68, 74, 80, 86, 92, 100, 0
-//     };
-
-//     if (speed < 1 || speed > 10) return;
-//     TIM3_Out_PWM_Duty_Set(duty_arr[speed - 1]);
-
-// }

@@ -97,3 +97,7 @@ extern void m_stop(void);
 extern void m_invert(int d);
 extern int  m_status(void);
 extern void m_speed(unsigned char speed);
+
+
+//uart.c
+extern void Motor_UART_Command(char cmd);

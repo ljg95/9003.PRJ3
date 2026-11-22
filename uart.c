@@ -104,3 +104,55 @@ void Uart2_RX_Interrupt_Enable(int en)
     NVIC_DisableIRQ(38);
   }
 }
+
+void USART2_IRQHandler(void)
+{
+	if (Macro_Check_Bit_Set(USART2->SR, 5)) 
+	{
+		char ch = (char)USART2->DR;
+		Motor_UART_Command(ch);
+	}
+}
+
+void Motor_UART_Command(char cmd)
+{
+	switch (cmd)
+	{
+		case 'f':
+		case 'F':
+    if(m_status()){
+      m_stop();
+      TIM4_Delay(500);
+      m_cw();
+      LED_On();
+      printf("Motor: Forward (CW)\r\n");
+    }break;
+
+		case 'r':
+		case 'R':
+    if(m_status()){			
+      m_stop();
+      TIM4_Delay(500);
+			m_ccw();
+      LED_Off();
+      printf("Motor: Reverse (CCW)\r\n");
+    }break;
+
+		case 's':
+		case 'S':
+    if(m_status()){
+			m_stop();
+      LED_Off();
+			printf("Motor: Stop\r\n");
+    }break;
+
+		default:
+			if (cmd >= '1' && cmd <= '9')
+			{
+				m_speed((unsigned char)cmd);
+				printf("Motor: Speed level %c\r\n", cmd);
+			}
+			break;
+	}
+
+}
