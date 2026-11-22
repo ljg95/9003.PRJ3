@@ -23,6 +23,8 @@ void m_ccw(void){
 void m_stop(void){
     //m_speed(10);
     Macro_Clear_Area(GPIOA->ODR, 0x3, 0);   // PA0, PA1 동시에 0
+    
+    TIM2_Delay(500);
 }
 
 
@@ -31,12 +33,12 @@ void m_invert(int d){
 
     if(d==2) {
         m_stop();
-        TIM4_Delay(500);
+        TIM2_Delay(500);
         m_ccw();
     } //이거 stop하고 delay 있어야 하나?
     else if (d==1) {
         m_stop();
-        TIM4_Delay(500);
+        TIM2_Delay(500);
         m_cw();
     }
     

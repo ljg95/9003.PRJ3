@@ -14,6 +14,10 @@
 #define TIME4_PLS_OF_1ms  	(1000./TIM4_TICK)
 #define TIM4_MAX	  		(0xffffu)
 
+#define TIM1_FREQ 	  			(8000000.) 	      		// Hz
+#define TIM1_TICK	  			(1000000./TIM1_FREQ)	// usec
+#define TIME1_PLS_OF_1ms  		(1000./TIM1_TICK)
+
 
 void TIM2_Stopwatch_Start(int time) // ms
 {
@@ -84,20 +88,35 @@ void TIM4_Repeat(int time)
 	Macro_Set_Bit(TIM4->CR1, 0);
 }
 
-void TIM4_Delay(int time)
+void TIM4_Repeat_Interrupt_Enable(int en, int time)
 {
-	Macro_Set_Bit(RCC->APB1ENR, 2);
+	if(en)
+	{
+		// TIM4 Clock On
+		Macro_Set_Bit(RCC->APB1ENR, 2);
+		TIM4->CR1 = (1<<4)|(0<<3);
+		TIM4->PSC = (unsigned int)(TIMXCLK/(double)TIM4_FREQ + 0.5)-1;
+		TIM4->ARR = TIME4_PLS_OF_1ms * time;
+		Macro_Set_Bit(TIM4->EGR,0);
+		
+		// TIM4 Pending Clear
+		// NVIC Pending Clear
+		Macro_Clear_Bit(TIM4->SR, 0);
+		NVIC_ClearPendingIRQ(30);
+		// TIM4 Interrupt Enable
+		// NVIC Interrupt Enable
+		Macro_Set_Bit(TIM4->DIER, 0);
+		NVIC_EnableIRQ(30);
+		// TIM4 Start
+		Macro_Set_Bit(TIM4->CR1, 0);
+	}
 
-	TIM4->CR1 = (1<<4)|(1<<3);
-	TIM4->PSC = (unsigned int)(TIMXCLK/TIM2_FREQ + 0.5)-1;
-	TIM4->ARR = TIME2_PLS_OF_1ms * time;
-
-	Macro_Set_Bit(TIM4->EGR,0);
-	Macro_Clear_Bit(TIM4->SR, 0);
-	Macro_Set_Bit(TIM4->CR1, 0);
-
-	while(Macro_Check_Bit_Clear(TIM4->SR, 0));
-	Macro_Clear_Bit(TIM4->CR1, 0);
+	else
+	{
+		NVIC_DisableIRQ(30);
+		Macro_Clear_Bit(TIM4->CR1, 0);
+		Macro_Clear_Bit(TIM4->DIER, 0);
+	}
 }
 
 int TIM4_Check_Timeout(void)
@@ -171,3 +190,45 @@ void TIM3_Out_Stop(void)
 
 
 
+void TIM1_Out_Init(void)
+{
+    Macro_Set_Bit(RCC->AHB1ENR, 0);
+    Macro_Set_Bit(RCC->APB2ENR, 0);
+
+    Macro_Write_Block(GPIOA->MODER, 0x3, 0x2, 16);
+    Macro_Write_Block(GPIOA->AFR[1], 0xf, 0x1, 0);
+
+    Macro_Write_Block(TIM1->CCMR1, 0xff, 0x68, 0);
+
+    TIM1->CCER = (0<<1)|(1<<0);
+    Macro_Set_Bit(TIM1->BDTR, 15);
+}
+
+
+void TIM1_Out_Freq_Generation(unsigned short freq)
+{
+    if (freq == 0) return;
+
+    TIM1->CCMR1 = (1<<6)|(1<<5)|(1<<3);
+
+    TIM1->CCER = (0<<1)|(1<<0);
+
+    Macro_Set_Bit(TIM1->BDTR, 15);
+
+    TIM1->PSC = (unsigned int)(SYSCLK/TIM1_FREQ+0.5)-1;
+
+    TIM1->ARR = (unsigned int)(TIM1_FREQ/freq+0.5)-1;
+
+    TIM1->CCR1 = (TIM1->ARR+1)/2;
+
+    Macro_Set_Bit(TIM1->EGR, 0);
+
+    TIM1->CNT = 0;
+
+    TIM1->CR1 = (1<<4)|(0<<3)|(1<<0);
+}
+
+void TIM1_Out_Stop(void)
+{
+    Macro_Clear_Bit(TIM1->CR1, 0);
+}

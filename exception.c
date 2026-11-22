@@ -33,6 +33,15 @@ void EXTI15_10_IRQHandler(void){
 	LED_Display(s == 2 ? 0 : 1);
 }
 
+void USART2_IRQHandler(void)
+{
+	if (Macro_Check_Bit_Set(USART2->SR, 5)) 
+	{
+		char ch = (char)USART2->DR;
+		Motor_UART_Command(ch);
+	}
+}
+
 void TIM2_IRQHandler(void)
 {
 	Macro_Clear_Bit(TIM2->SR, 0);         // UIF 지우기
@@ -41,36 +50,18 @@ void TIM2_IRQHandler(void)
 	if (Pressing && Macro_Check_Bit_Clear(GPIOC->IDR, 13)) {
 		Pressing = 0;             // 뗄 때 rising은 무시되게
 		// 2초 경과 → 모터 on/off
-		if (m_status() == 1 || m_status() == 2) { m_stop(); LED_Off(); }
-		else            { m_speed('1'); m_cw();   LED_On();  }
+		if (m_status() == 1 || m_status() == 2) { m_stop(); Buzzer_Play_Song(2); LED_Off();}
+		else            { m_speed('1'); m_cw(); TIM1_Out_Stop(); TIM4_Repeat_Interrupt_Enable(0, 0); LED_On(); LED_Background_Off(); }
 	}
 
 }
 
-volatile int TIM4_Expired = 0;
 
 void TIM4_IRQHandler(void)
 {
 	Macro_Clear_Bit(TIM4->SR, 0);
 	NVIC_ClearPendingIRQ(30);
-	TIM4_Expired = 1;
+	
+	Buzzer_BGM_1TICK();
 }
 
-
-volatile int DMA2_STREAM0_DONE = 0;
-
-void DMA2_Stream0_IRQHandler(void)
-{
-	DMA2->LIFCR = 0x3F << 0;
-	NVIC_ClearPendingIRQ(56);
-    DMA2_STREAM0_DONE = 1;
-}
-
-volatile int DMA1_STREAM6_DONE = 0;
-
-void DMA1_Stream6_IRQHandler(void)
-{
-	DMA1->HIFCR = 0x3F << 16;
-	NVIC_ClearPendingIRQ(17);
-    DMA1_STREAM6_DONE = 1;
-}

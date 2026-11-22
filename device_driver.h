@@ -26,6 +26,9 @@ extern void LED_Init(void);
 extern void LED_On(void);
 extern void LED_Off(void);
 extern void LED_Display(int on);
+extern void LED_Background(void);
+extern void LED_Background_Off(void);
+extern void LED_Cong(void);
 
 // Clock.c
 
@@ -46,7 +49,6 @@ extern void TIM2_Stopwatch_Start(int time);
 extern int TIM2_Check_Timeout(void);
 extern void TIM4_Repeat(int time);
 extern int TIM4_Check_Timeout(void);
-extern void TIM4_Delay(int time);
 extern void TIM4_Stop(void);
 extern void TIM4_Change_Value(int time);
 extern void TIM3_Out_Init(void);
@@ -56,6 +58,9 @@ extern void TIM4_Repeat_Interrupt_Enable(int en, int time);
 extern void TIM3_Out_Start(void);
 extern void TIM3_Out_PWM_Duty_Set(int duty);
 //extern int TIM3_Check_Duty_Set();
+extern void TIM1_Out_Init(void);
+extern void TIM1_Out_Freq_Generation(unsigned short freq);
+extern void TIM1_Out_Stop(void);
 
 // i2c.c
 
@@ -101,3 +106,7 @@ extern void m_speed(unsigned char speed);
 
 //uart.c
 extern void Motor_UART_Command(char cmd);
+
+//buzzer.c
+void Buzzer_Play_Song(int song_num);
+void Buzzer_BGM_1TICK(void);

@@ -22,7 +22,9 @@ void Main(void)
     m_init();
     Key_ISR_Enable(1);
     Uart2_RX_Interrupt_Enable(1);
-    
+    TIM1_Out_Init();
+    Buzzer_Play_Song(1);
+
     for(;;){
 
     }

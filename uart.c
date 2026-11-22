@@ -35,61 +35,6 @@ void Uart2_Init(int baud)
   USART2->CR3 = 0;
 }
 
-void Uart1_Init(int baud)
-{
-  double div;
-  unsigned int mant;
-  unsigned int frac;
-
-  Macro_Set_Bit(RCC->AHB1ENR, 0);                   // PA9,10
-  Macro_Set_Bit(RCC->APB2ENR, 4);                   // USART1 ON
-  Macro_Write_Block(GPIOA->MODER, 0xf, 0xa, 18);    // PA9,10 => ALT
-  Macro_Write_Block(GPIOA->AFR[1], 0xff, 0x77, 4);  // PA9,10 => AF07
-  Macro_Write_Block(GPIOA->PUPDR, 0xf, 0x5, 18);    // PA9,10 => Pull-Up
-
-  div = PCLK2 / (16. * baud);
-  mant = (int)div;
-  frac = (int)((div - mant) * 16 + 0.5);
-  mant += frac >> 4;
-  frac &= 0xf;
-  USART1->BRR = (mant<<4)|(frac<<0);
-
-  USART1->CR1 = (1<<13)|(0<<12)|(0<<10)|(1<<3)|(1<<2);
-  USART1->CR2 = 0 << 12;
-  USART1->CR3 = 0;
-}
-
-void Uart1_Send_Byte(char data)
-{
-  if(data == '\n')
-  {
-    while(!Macro_Check_Bit_Set(USART1->SR, 7));
-    USART1->DR = 0x0d;
-  }
-
-  while(!Macro_Check_Bit_Set(USART1->SR, 7));
-  USART1->DR = data;
-}
-
-char Uart1_Get_Char(void)
-{
-	while(!Macro_Check_Bit_Set(USART1->SR, 5));
-	return (char)USART1->DR;
-}
-
-char Uart1_Get_Pressed(void)
-{
-	if(Macro_Check_Bit_Set(USART1->SR, 5))
-	{
-		return (char)USART1->DR;
-	}
-
-	else
-	{
-		return (char)0;
-	}
-}
-
 void Uart2_RX_Interrupt_Enable(int en)
 {
   if(en)
@@ -105,15 +50,6 @@ void Uart2_RX_Interrupt_Enable(int en)
   }
 }
 
-void USART2_IRQHandler(void)
-{
-	if (Macro_Check_Bit_Set(USART2->SR, 5)) 
-	{
-		char ch = (char)USART2->DR;
-		Motor_UART_Command(ch);
-	}
-}
-
 void Motor_UART_Command(char cmd)
 {
 	switch (cmd)
@@ -122,7 +58,7 @@ void Motor_UART_Command(char cmd)
 		case 'F':
     if(m_status()){
       m_stop();
-      TIM4_Delay(500);
+      TIM2_Delay(500);
       m_cw();
       LED_On();
       printf("Motor: Forward (CW)\r\n");
@@ -132,7 +68,7 @@ void Motor_UART_Command(char cmd)
 		case 'R':
     if(m_status()){			
       m_stop();
-      TIM4_Delay(500);
+      TIM2_Delay(500);
 			m_ccw();
       LED_Off();
       printf("Motor: Reverse (CCW)\r\n");
@@ -144,6 +80,7 @@ void Motor_UART_Command(char cmd)
 			m_stop();
       LED_Off();
 			printf("Motor: Stop\r\n");
+      Buzzer_Play_Song(2);
     }break;
 
 		default:
