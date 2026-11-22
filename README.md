@@ -108,8 +108,6 @@ make run
 | `timer.c` | TIM2(스톱워치/딜레이), TIM3(PWM), TIM4(딜레이/반복) |
 | `key.c` | 버튼 폴링 및 EXTI 설정 |
 | `led.c` | PA5 LED 제어 |
-| `clock.c` | 시스템 클럭 설정 (96MHz) |
-| `adc.c`, `dma.c`, `i2c.c`, `spi.c`, `systick.c` | 기타 주변장치 드라이버 (현재 `Main`에서 미사용) |
 | `runtime.c` | newlib 시스템콜 스텁 (`printf` → UART) |
 | `device_driver.h` | 전체 드라이버 함수 선언 |
 | `option.h`, `macro.h` | 클럭/메모리 상수, 레지스터 비트 조작 매크로 |
